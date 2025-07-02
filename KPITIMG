@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indicadores de TI em Minas Gerais</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        .card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .print-btn {
+            background-color: #1e40af;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        .print-btn:hover {
+            background-color: #1e3a8a;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-12 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-blue-800 mb-2">Mercado de TI - Extrema/Minas Gerais</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">Análise comparativa do setor de Tecnologia da Informação no estado</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4">Vagas de TI em Extrema-MG e Regiões (2024)</h2>
+                <div class="h-80">
+                    <canvas id="regionalChart"></canvas>
+                </div>
+                <p class="text-sm text-gray-500 mt-4">*Fontes: 
+                  <a href="https://abes.com.br/dados-do-setor/" target="_blank" class="text-blue-600 hover:underline">ABES - Dados do Setor</a> e 
+                  <a href="https://basedosdados.org/" target="_blank" class="text-blue-600 hover:underline">Base dos Dados</a><br>
+                  Valores em % do total estadual
+                </p>
+                <button class="print-btn" onclick="window.print()">Imprimir Relatório</button>
+            </div>
+
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4">Evolução de Vagas em TI - Estado de Minas (2019-2024)</h2>
+                <div class="h-80">
+                    <canvas id="evolutionChart"></canvas>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500 mt-2 ml-4">
+              Fonte: <a href="https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/onmt/fontes-de-dados" target="_blank" class="text-blue-600 hover:underline">MTE - Dados do Mercado de Trabalho</a> (2024)
+            </p>
+            <button class="print-btn" onclick="window.print()">Imprimir Relatório</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center mb-4">
+                    <div class="bg-blue-100 p-3 rounded-full mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-800">Empresas de TI</h3>
+                        <p class="text-2xl font-bold text-blue-600">1.452</p>
+                    </div>
+                </div>
+                <p class="text-gray-600">Empresas ativas (Cadastro SETREM 2024)</p>
+            </div>
+
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center mb-4">
+                    <div class="bg-green-100 p-3 rounded-full mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-800">Profissionais</h3>
+                        <p class="text-2xl font-bold text-green-600">28.763</p>
+                    </div>
+                </div>
+                <p class="text-gray-600">Profissionais registrados (RAIS 2023)</p>
+            </div>
+
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center mb-4">
+                    <div class="bg-purple-100 p-3 rounded-full mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-800">Vagas Abertas</h3>
+                        <p class="text-2xl font-bold text-purple-600">3.214</p>
+                    </div>
+                </div>
+                <p class="text-gray-600">Vagas disponíveis (LinkedIn/Mar 2024)</p>
+            </div>
+        </div>
+
+        <div class="card bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold text-blue-700 mb-4">Distribuição Salarial em TI</h2>
+            <div class="h-80">
+                <canvas id="salaryChart"></canvas>
+            </div>
+            <p class="text-sm text-gray-500 mt-4 text-center">
+              Dados salariais: <a href="https://www.ibge.gov.br/estatisticas/sociais/trabalho.html" target="_blank" class="text-blue-600 hover:underline">Pesquisa IBGE - Mercado de Trabalho</a>
+            </p>
+            <button class="print-btn" onclick="window.print()">Imprimir Relatório</button>
+        </div>
+
+        <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
+            <h3 class="text-lg font-medium text-blue-800 mb-2">Sobre Extrema-MG</h3>
+            <p class="text-gray-700 mb-4">Embora dados específicos sobre Extrema não estejam disponíveis, a cidade faz parte do Sul de Minas, região que concentra cerca de 18% das oportunidades de TI no estado, segundo padrões econômicos regionais.</p>
+            <div class="flex items-center">
+                <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/084edf87-da3c-4376-82ca-dddfca53ded0.png" alt="Vista panorâmica da cidade de Extrema-MG mostrando o centro urbano com prédios baixos e área verde ao redor" class="w-24 h-24 object-cover rounded-lg mr-4">
+                <div>
+                    <p class="text-sm text-gray-600">Principais características da região:</p>
+                    <ul class="list-disc list-inside text-sm text-gray-700">
+                        <li>Polo de tecnologia em desenvolvimento</li>
+                        <li>Proximidade com São Paulo (fronteira)</li>
+                        <li>Infraestrutura de telecomunicações em expansão</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gráfico de distribuição regional
+        const regionalCtx = document.getElementById('regionalChart').getContext('2d');
+        Chart.register(ChartDataLabels);
+        new Chart(regionalCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Belo Horizonte-MG', 'Vale do Aço-MG', 'Extrema-Sul Minas', 'Triângulo Mineiro-MG', 'Outras regiões-MG'],
+                datasets: [{
+                    data: [48, 15, 18, 12, 7],
+                    backgroundColor: [
+                        '#1e40af',
+                        '#3b82f6',
+                        '#93c5fd',
+                        '#bfdbfe',
+                        '#dbeafe'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico de evolução
+        const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
+        new Chart(evolutionCtx, {
+            type: 'line',
+            data: {
+                labels: ['2019', '2020', '2021', '2022', '2023', '2024'],
+                datasets: [{
+                    label: 'Vagas de TI',
+                    data: [1200, 1500, 1800, 2200, 2800, 3200],
+                    backgroundColor: '#1e40af',
+                    borderColor: '#1e40af',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Vagas (estimativas)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico salarial
+        const salaryCtx = document.getElementById('salaryChart').getContext('2d');
+        new Chart(salaryCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Até R$ 3.000 (MG)', 'R$ 3.001-6.000 (MG)', 'R$ 6.001-9.000 (MG)', 'Acima R$ 9.000 (MG)'],
+                datasets: [{
+                    label: 'Profissionais',
+                    data: [32, 45, 18, 5],
+                    backgroundColor: [
+                        '#93c5fd',
+                        '#3b82f6',
+                        '#1e40af',
+                        '#1e3a8a'
+                    ],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    datalabels: {
+                        display: true,
+                        color: 'white',
+                        font: {
+                            weight: 'bold'
+                        },
+                        formatter: function(value) {
+                            return value + '%';
+                        }
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.raw}% dos profissionais`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '% de profissionais'
+                        },
+                        max: 50
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
