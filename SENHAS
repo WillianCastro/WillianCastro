@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Senhas Seguras</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .password-display {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+        .strength-meter {
+            height: 6px;
+            transition: all 0.3s;
+        }
+        .copy-btn {
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            transform: scale(1.05);
+        }
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+        #allCombinations {
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Gerador de Senhas</h1>
+            <p class="text-gray-600 mt-2">Crie senhas seguras personalizadas</p>
+        </div>
+
+        <div class="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-100" id="passwordDisplay">
+            <div class="flex flex-col">
+                <span class="password-display text-xl font-mono mb-2 text-center" id="mainPassword">Clique em Gerar Senha</span>
+                <div id="passwordList" class="text-sm font-mono break-all max-h-60 overflow-y-auto"></div>
+                <button class="copy-btn mt-2 p-2 bg-blue-100 rounded-full hover:bg-blue-200 focus:outline-none" 
+                        id="copyBtn" title="Copiar senha">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                </button>
+            </div>
+            <div class="flex items-center mt-3">
+                <div class="strength-meter flex-grow h-2 bg-gray-200 rounded-full overflow-hidden" id="strengthMeter">
+                    <div class="h-full w-0 bg-gray-400" id="strengthBar"></div>
+                </div>
+                <span class="ml-2 text-sm font-medium" id="strengthText">Força</span>
+            </div>
+            <div class="mt-4 bg-gray-50 p-3 rounded-lg">
+                <span class="block text-gray-700 font-medium">Estatísticas:</span>
+                <div class="text-sm mt-1">
+                    <div>Combinações possíveis: <span id="combinationsCount" class="font-mono">0</span></div>
+                    <div>Caracteres únicos: <span id="uniqueCharsCount" class="font-mono">0</span></div>
+                    <div>Variações de caixa: <span id="caseVariations" class="font-mono">1x</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="flex items-center justify-between">
+                    <span class="text-gray-700 font-medium">Tamanho: <span id="lengthValue">12</span></span>
+                    <input type="range" id="lengthSlider" min="4" max="32" value="12" 
+                           class="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </label>
+                <label class="flex items-center justify-between mt-2">
+                    <span class="text-gray-700 font-medium">Quantidade:</span>
+                    <input type="number" id="quantityInput" min="1" value="5" 
+                           class="w-20 p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                </label>
+            </div>
+
+            <div class="mt-4">
+                <label class="block text-gray-700 font-medium mb-2">Letras/Números específicos:</label>
+                <textarea id="customChars" placeholder="Insira caracteres (as senhas não terão caracteres repetidos)" 
+                        class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></textarea>
+                <p class="text-xs text-gray-500 mt-1">Letras poderão variar entre maiúsculas/minúsculas. O sistema garante que todas as senhas geradas serão distintas e únicas.</p>
+            </div>
+
+            <button id="generateBtn" 
+                    class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                Gerar Senha
+            </button>
+        </div>
+
+        <div class="mt-6 text-sm text-gray-500">
+            <p><strong>Dica:</strong> Para maior segurança, use senhas com pelo menos 12 caracteres.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos DOM
+            const lengthSlider = document.getElementById('lengthSlider');
+            const lengthValue = document.getElementById('lengthValue');
+            const quantityInput = document.getElementById('quantityInput');
+            const generateBtn = document.getElementById('generateBtn');
+            const passwordOutput = document.getElementById('passwordOutput');
+            const copyBtn = document.getElementById('copyBtn');
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthText = document.getElementById('strengthText');
+            const combinationsCount = document.getElementById('combinationsCount');
+            const uniqueCharsCount = document.getElementById('uniqueCharsCount');
+            const caseVariations = document.getElementById('caseVariations');
+            const mainPassword = document.getElementById('mainPassword');
+
+            // Atualiza o valor do comprimento
+            lengthSlider.addEventListener('input', function() {
+                lengthValue.textContent = this.value;
+            });
+            
+            // No quantity slider listener needed since we're using direct input
+
+            // Gera a senha
+            generateBtn.addEventListener('click', generatePassword);
+
+            // Copia a senha para a área de transferência
+            copyBtn.addEventListener('click', function() {
+                const password = passwordOutput.textContent;
+                if (password && password !== 'Clique em Gerar Senha') {
+                    navigator.clipboard.writeText(password).then(() => {
+                        const originalIcon = copyBtn.innerHTML;
+                        copyBtn.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        `;
+                        setTimeout(() => {
+                            copyBtn.innerHTML = originalIcon;
+                        }, 2000);
+                    });
+                }
+            });
+
+            // Função principal para gerar a senha
+            function generatePassword() {
+                const length = parseInt(lengthSlider.value);
+                const customChars = document.getElementById('customChars').value;
+
+                // Verifica caracteres informados
+                if (!customChars) {
+                    document.getElementById('mainPassword').textContent = 'Por favor, insira caracteres para gerar a senha.';
+                    strengthBar.style.width = '0%';
+                    strengthText.textContent = 'Fraca';
+                    strengthBar.className = 'h-full bg-red-500';
+                    combinationsCount.textContent = '0';
+                    document.getElementById('uniqueCharsCount').textContent = '0';
+                    document.getElementById('caseVariations').textContent = '0x';
+                    return;
+                }
+
+                // Gera senha sem caracteres duplicados (com variação de caixa)
+                let password = '';
+                let availableChars = customChars.split('');
+                
+                let uniqueChars = [...new Set(customChars.toLowerCase())];
+                let hasLetters = /[a-z]/i.test(customChars);
+                let caseVariations = hasLetters ? 2 : 1;
+                
+                document.getElementById('uniqueCharsCount').textContent = uniqueChars.length;
+                document.getElementById('caseVariations').textContent = caseVariations + 'x';
+                
+                if (length > availableChars.length) {
+                    mainPassword.textContent = 'Não há caracteres suficientes (comprimento maior que caracteres distintos)';
+                    document.getElementById('passwordList').innerHTML = '';
+                    combinationsCount.textContent = '0';
+                    return;
+                }
+                
+                // Gera uma senha misturando maiúsculas e minúsculas
+                for (let i = 0; i < length; i++) {
+                    const randomIndex = Math.floor(Math.random() * availableChars.length);
+                    const char = availableChars[randomIndex];
+                    
+                    // Aplica variação de caixa aleatória para letras
+                    if (/[a-zA-Z]/.test(char)) {
+                        password += Math.random() > 0.5 ? char.toUpperCase() : char.toLowerCase();
+                    } else {
+                        password += char;
+                    }
+                    
+                    // Remove o caractere usado para evitar duplicação
+                    availableChars.splice(randomIndex, 1);
+                }
+
+                // Gera variações da senha sem repetição
+                const quantity = parseInt(quantityInput.value) || 1;
+                const passwordList = document.getElementById('passwordList');
+                const mainPassword = document.getElementById('mainPassword');
+                
+                mainPassword.textContent = password;
+                passwordList.innerHTML = '';
+                
+                // Usa Set para armazenar senhas únicas
+                const uniquePasswords = new Set();
+                uniquePasswords.add(password);
+                
+                // Gera variações até atingir a quantidade desejada
+                while (uniquePasswords.size < quantity) {
+                    const chars = password.split('');
+                    for (let j = chars.length - 1; j > 0; j--) {
+                        const k = Math.floor(Math.random() * (j + 1));
+                        [chars[j], chars[k]] = [chars[k], chars[j]];
+                    }
+                    uniquePasswords.add(chars.join(''));
+                }
+                
+                // Exibe as senhas únicas
+                Array.from(uniquePasswords).slice(0, quantity).forEach(pass => {
+                    passwordList.innerHTML += `<div class="mt-2 p-2 bg-gray-50 rounded hover:bg-gray-100">${pass}</div>`;
+                });
+
+                // Calcula e exibe o total de combinações possíveis (considerando variação de caixa)
+                let calculatedUniqueChars = [...new Set(customChars.toLowerCase())].length;
+                if (hasLetters) {
+                    calculatedUniqueChars *= 2; // Dobra as possibilidades para cada letra (maiúscula/minúscula)
+                }
+                let totalCombinations = 1;
+                for (let i = 0; i < length; i++) {
+                    totalCombinations *= (calculatedUniqueChars - i);
+                }
+                combinationsCount.textContent = totalCombinations.toLocaleString('pt-BR');
+                
+                updatePasswordStrength(password, length);
+            }
+
+            // Função auxiliar para calcular fatorial
+            function factorial(n) {
+                if (n <= 1) return 1;
+                return n * factorial(n - 1);
+            }
+
+            // Função auxiliar para obter um caractere aleatório
+            function getRandomChar(string) {
+                return string[Math.floor(Math.random() * string.length)];
+            }
+
+            // Função para calcular a força da senha
+            function updatePasswordStrength(password, length) {
+                // Calcula a força baseada no comprimento
+                let strength = 0;
+
+                // Comprimento
+                if (length >= 24) strength += 40;
+                else if (length >= 16) strength += 30;
+                else if (length >= 12) strength += 20;
+                else if (length >= 8) strength += 10;
+                else strength += 5;
+
+                // Limita a força entre 0 e 100
+                strength = Math.min(100, Math.max(0, strength));
+
+                // Atualiza a barra de força
+                strengthBar.style.width = `${strength}%`;
+
+                // Define a cor e texto da força
+                if (strength < 40) {
+                    strengthBar.className = 'h-full bg-red-500';
+                    strengthText.textContent = 'Fraca';
+                } else if (strength < 70) {
+                    strengthBar.className = 'h-full bg-yellow-500';
+                    strengthText.textContent = 'Média';
+                } else {
+                    strengthBar.className = 'h-full bg-green-500';
+                    strengthText.textContent = 'Forte';
+                }
+            }
+
+            // Botão para mostrar combinações
+            document.getElementById('showCombinationsBtn').addEventListener('click', function() {
+                const container = document.getElementById('combinationsContainer');
+                container.classList.toggle('hidden');
+                
+                if (!container.classList.contains('hidden')) {
+                    showAllCombinations();
+                }
+            });
+
+            function showAllCombinations() {
+                const customChars = document.getElementById('customChars').value;
+                if (!customChars) return;
+                
+                const length = parseInt(lengthSlider.value);
+                const uniqueChars = [...new Set(customChars.toLowerCase())];
+                const hasLetters = /[a-z]/i.test(customChars);
+                const charPool = hasLetters ? uniqueChars.map(c => [c.toLowerCase(), c.toUpperCase()]).flat() : uniqueChars;
+
+                // Função para gerar permutações
+                function* generatePermutations(chars, length) {
+                    yield* permute(chars, [], length);
+                }
+
+                function* permute(chars, current, length) {
+                    if (current.length === length) {
+                        yield current.slice();
+                        return;
+                    }
+                    for (let i = 0; i < chars.length; i++) {
+                        current.push(chars[i]);
+                        yield* permute(chars.filter((_, j) => j !== i), current, length);
+                        current.pop();
+                    }
+                }
+
+                // Mostra até 1000 combinações (por desempenho)
+                const combinationsDiv = document.getElementById('allCombinations');
+                combinationsDiv.innerHTML = 'Calculando...';
+                
+                let count = 0;
+                const maxToShow = 100000; // Increased to 100,000 for better demonstration
+                
+                setTimeout(() => {
+                    const generator = generatePermutations(charPool, length);
+                    let result = [];
+                    let next = generator.next();
+                    
+                    while (!next.done && count < maxToShow) {
+                        result.push(next.value.join(''));
+                        count++;
+                        next = generator.next();
+                    }
+                    
+                    combinationsDiv.innerHTML = result.join('<br>');
+                    if (count >= maxToShow) {
+                        combinationsDiv.innerHTML += '<br>... (mostrando apenas as primeiras 100,000 combinações)';
+                    }
+                }, 100);
+            }
+
+            // Gera uma senha inicial ao carregar a página
+            generatePassword();
+        });
+    </script>
+</body>
+</html>
